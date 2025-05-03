@@ -1,7 +1,7 @@
 {
   "domain": "pangolin",
   "name": "Pangolin Monitor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "documentation": "https://github.com/teuchezh/pangolin-monitor",
   "requirements": [],
   "config_flow": true,
