@@ -18,12 +18,15 @@ class PangolinTunnelSensor(SensorEntity):
     def __init__(self, site):
         self._attr_name = f"Pangolin Tunnel {site['name']}"
         self._attr_unique_id = f"pangolin_tunnel_{site['siteId']}"
-        self._attr_icon = "mdi:cloud-outline"
         self._site = site
 
     @property
     def state(self):
         return "online" if self._site.get("online") else "offline"
+
+    @property
+    def icon(self):
+        return "mdi:cloud-outline" if self._site.get("online") else "mdi:cloud-off-outline"
 
     @property
     def extra_state_attributes(self):

@@ -1,6 +1,6 @@
 {
   "name": "Pangolin Monitor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "slug": "pangolin",
   "description": "Pangolin Monitor Integration for Home Assistant",
   "domain": "pangolin",
