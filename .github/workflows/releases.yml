@@ -1,6 +1,13 @@
 name: Create GitHub Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to release'
+        required: true
+        default: 'v1.0.0'
+
   push:
     tags:
       - "v*.*.*"
