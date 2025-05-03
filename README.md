@@ -1,4 +1,4 @@
-# Pangolin Integration for Home Assistant
+# Pangolin Monitor Integration for Home Assistant
 
 This integration connects Home Assistant with Pangolin
 ## Features
