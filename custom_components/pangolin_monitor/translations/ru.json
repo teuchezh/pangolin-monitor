@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Подключение к Pangolin",
+        "description": "Введите ваши учетные данные Pangolin",
+        "data": {
+          "email": "Email",
+          "password": "Пароль",
+          "base_url": "Базовый URL"
+        }
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Обновить конфигурацию",
+          "data": {
+            "email": "Email",
+            "password": "Пароль",
+            "base_url": "Базовый URL"
+          }
+        }
+      }
+    }
+  }
+}

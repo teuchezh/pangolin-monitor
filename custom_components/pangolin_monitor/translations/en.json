@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Pangolin",
+        "description": "Enter your Pangolin credentials",
+        "data": {
+          "email": "Email",
+          "password": "Password",
+          "base_url": "Base URL"
+        }
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Update Configuration",
+          "data": {
+            "email": "Email",
+            "password": "Password",
+            "base_url": "Base URL"
+          }
+        }
+      }
+    }
+  }
+}

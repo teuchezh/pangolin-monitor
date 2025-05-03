@@ -1,0 +1,10 @@
+{
+  "domain": "pangolin",
+  "name": "Pangolin Tunnel",
+  "version": "1.0.0",
+  "documentation": "https://github.com/teuchezh/pangolin-monitor",
+  "requirements": [],
+  "codeowners": ["@teuchezh"],
+  "config_flow": true,
+  "iot_class": "cloud_polling"
+}
