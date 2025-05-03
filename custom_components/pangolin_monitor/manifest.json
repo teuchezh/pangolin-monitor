@@ -1,7 +1,7 @@
 {
   "domain": "pangolin",
   "name": "Pangolin Tunnel",
-  "version": "1.0.1",
+  "version": "0.1.0",
   "documentation": "https://github.com/teuchezh/pangolin-monitor",
   "requirements": [],
   "codeowners": ["@teuchezh"],
