@@ -1,6 +1,4 @@
 {
   "name": "Pangolin Monitor",
-  "render_readme": true,
-  "domains": ["pangolin"],
-  "category": "integration"
+  "render_readme": true
 }

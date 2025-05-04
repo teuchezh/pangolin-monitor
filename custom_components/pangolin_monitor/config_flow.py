@@ -13,9 +13,9 @@ class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title="Pangolin", data=user_input)
 
         schema = vol.Schema({
+            vol.Required("base_url"): str,
             vol.Required("email"): str,
             vol.Required("password"): str,
-            vol.Required("base_url"): str,
         })
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
@@ -34,9 +34,9 @@ class PangolinOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         schema = vol.Schema({
+            vol.Required("base_url", default=self.config_entry.data.get("base_url")): str,
             vol.Required("email", default=self.config_entry.data.get("email")): str,
             vol.Required("password", default=self.config_entry.data.get("password")): str,
-            vol.Required("base_url", default=self.config_entry.data.get("base_url")): str,
         })
 
         return self.async_show_form(step_id="init", data_schema=schema)

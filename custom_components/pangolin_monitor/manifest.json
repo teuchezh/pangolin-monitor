@@ -1,11 +1,11 @@
 {
-  "domain": "pangolin",
+  "domain": "pangolin_monitor",
   "name": "Pangolin Monitor",
-  "version": "0.1.3",
-  "documentation": "https://github.com/teuchezh/pangolin-monitor",
-  "requirements": [],
+  "codeowners": ["@teuchezh"],
   "config_flow": true,
+  "documentation": "https://github.com/teuchezh/pangolin-monitor",
+  "issue_tracker": "https://github.com/teuchezh/pangolin-monitor/issues",
   "iot_class": "cloud_polling",
-  "icon": "/local/pangolin/logo.png",
-  "codeowners": ["@teuchezh"]
+  "requirements": [],
+  "version": "0.1.3"
 }

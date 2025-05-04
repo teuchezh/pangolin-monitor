@@ -11,9 +11,9 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["sensor"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    base_url = entry.data["base_url"]
     email = entry.data["email"]
     password = entry.data["password"]
-    base_url = entry.data["base_url"]
 
     api = PangolinApiClient(email, password, base_url)
     await api.authenticate()
