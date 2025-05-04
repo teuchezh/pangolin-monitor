@@ -1,6 +1,8 @@
 # Pangolin Monitor Integration for Home Assistant
 
-This integration connects Home Assistant with Pangolin  
+![https://github.com/fosrl/pangolin](/images/logo.png)
+
+This integration connects Home Assistant with [Pangolin](https://github.com/fosrl/pangolin)  
 
 ![example](images/lovelace-card.png)
 
