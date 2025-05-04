@@ -5,9 +5,12 @@
   "description": "Pangolin Monitor Integration for Home Assistant",
   "domain": "pangolin",
   "documentation": "https://github.com/teuchezh/pangolin-monitor",
+  "homeassistant": "2023.7",
+  "render_readme": true,
   "dependencies": [],
   "requirements": ["aiohttp"],
   "config_flow": true,
   "iot_class": "cloud_polling",
-  "icon": "/local/pangolin/icon.png"
+  "icon": "images/icon.png",
+  "logo": "images/logo.png"
 }
