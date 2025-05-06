@@ -14,22 +14,26 @@ I will be glad to receive suggestions for new functionality.
 - Tracks tunnels/sites registered in Pangolin
 - Displays state (online/offline) and stats per tunnel
 
+## Pre-Reqs
+1. A admin user in Pangolin (normal user wont poll tunnel statuses).
+2. HACS installed on Home Assistant.
+3. You have [mushroom cards](https://github.com/piitaya/lovelace-mushroom) installed too
+
 ## Configuration
 
-1. Go to Home Assistant Integrations
-2. Add new integration -> Pangolin Monitor
-3. Provide your Pangolin email, password, and server base URL
+1. Go to Home Assistant HACS
+2. Click the three dots in the top right, Custom Repositories.
+3. Paste the URL for this repo into the Repository box, change the type to 'Integrations, and Press Add
+4. Go to Integrations
+5. Add new integration -> Pangolin Monitor
+6. Provide your Pangolin email, password, and server base URL
 
 ## Jinja Generator script for mushroom template cards
+_Important: Ensure that your tunnels are setup/viewable before doing this part._  
 
-🔧 How to use:
-
-Go to Home Assistant → Developer Tools → Templates.
-
-Paste the Jinja code above and copy the generated YAML.
-
-Paste it into Lovelace as a "Manual Card" (or into a vertical-stack if there are multiple cards).
-
+### 🔧 How to use
+1. Go to Home Assistant → Developer Tools → Templates.
+2. Paste the Jinja code below and copy the generated YAML to your clipboard.
 ```jinja
 {% for entity in states.sensor 
      if entity.entity_id.startswith('sensor.pangolin_tunnel_') %}
@@ -47,6 +51,13 @@ Paste it into Lovelace as a "Manual Card" (or into a vertical-stack if there are
     action: more-info
 {% endfor %}
 ```
+3. Go to your dashboard of choice, edit and create a new card as a "Manual Card" (or into a vertical-stack if there are multiple cards).
+4. Paste in the generated code, then add the below to the top of the code -
+```yaml
+type: vertical-stack
+cards:
+```
+_Note, make sure to indent the pasted code._
 
 ## Disclaimer
 This project is not affiliated with or endorsed by Pangolin.
