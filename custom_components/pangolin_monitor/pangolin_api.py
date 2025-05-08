@@ -38,8 +38,18 @@ class PangolinApiClient:
             await self.authenticate()
 
         url = f"{self._base_url}/api/v1/org/home/sites"
+
         async with self._session.get(url, cookies=self._cookies) as resp:
-            if resp.status != 200:
+            if resp.status == 401:
+                _LOGGER.warning("Session expired. Re-authenticating.")
+                await self.authenticate()
+                # Retry after re-authentication
+                async with self._session.get(url, cookies=self._cookies) as retry_resp:
+                    if retry_resp.status != 200:
+                        _LOGGER.error("Failed to get sites after re-authentication: %s", await retry_resp.text())
+                        raise Exception("Fetching sites failed after re-authentication")
+                    return await retry_resp.json()
+            elif resp.status != 200:
                 _LOGGER.error("Failed to get sites: %s", await resp.text())
                 raise Exception("Fetching sites failed")
             return await resp.json()

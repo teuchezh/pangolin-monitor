@@ -17,7 +17,7 @@ I will be glad to receive suggestions for new functionality.
 ## Pre-Reqs
 1. A admin user in Pangolin (normal user wont poll tunnel statuses).
 2. HACS installed on Home Assistant.
-3. You have [mushroom cards](https://github.com/piitaya/lovelace-mushroom) installed too
+3. You have [mushroom cards](https://github.com/piitaya/lovelace-mushroom) installed too (optional)
 
 ## Configuration
 
@@ -27,6 +27,18 @@ I will be glad to receive suggestions for new functionality.
 4. Go to Integrations
 5. Add new integration -> Pangolin Monitor
 6. Provide your Pangolin email, password, and server base URL
+
+If you are using mushroom cards, you can use the Jinja Generator script below to generate cards for all your tunnels at once. Or you can use the built-in "Tile" component or any other component you prefer.
+![tile](images/tile.png)
+
+```yaml
+type: tile
+entity: sensor.pangolin_tunnel_home
+state_content:
+  - state
+  - megabytes_in
+  - megabytes_out
+```
 
 ## Jinja Generator script for mushroom template cards
 _Important: Ensure that your tunnels are setup/viewable before doing this part._  

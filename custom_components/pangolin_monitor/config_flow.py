@@ -1,8 +1,25 @@
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.exceptions import HomeAssistantError
+import aiohttp
 
 from .const import DOMAIN
+
+async def validate_input(hass, data):
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{data['base_url']}/api/v1/org/home/sites", cookies={}) as resp:
+                if resp.status == 401:
+                    raise InvalidAuth
+                elif resp.status >= 400:
+                    raise CannotConnect
+    except aiohttp.ClientError:
+        raise CannotConnect
+    except Exception as err:
+        raise UnknownError from err
+
+    return {"title": "Pangolin Monitor"}
 
 class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
@@ -10,7 +27,16 @@ class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         errors = {}
         if user_input is not None:
-            return self.async_create_entry(title="Pangolin", data=user_input)
+            try:
+                await validate_input(self.hass, user_input)
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except UnknownError:
+                errors["base"] = "unknown"
+            else:
+                return self.async_create_entry(title="Pangolin", data=user_input)
 
         schema = vol.Schema({
             vol.Required("base_url"): str,
@@ -20,23 +46,11 @@ class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        return PangolinOptionsFlowHandler(config_entry)
+class CannotConnect(HomeAssistantError):
+    pass
 
-class PangolinOptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
+class InvalidAuth(HomeAssistantError):
+    pass
 
-    async def async_step_init(self, user_input=None):
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
-        schema = vol.Schema({
-            vol.Required("base_url", default=self.config_entry.data.get("base_url")): str,
-            vol.Required("email", default=self.config_entry.data.get("email")): str,
-            vol.Required("password", default=self.config_entry.data.get("password")): str,
-        })
-
-        return self.async_show_form(step_id="init", data_schema=schema)
+class UnknownError(HomeAssistantError):
+    pass
