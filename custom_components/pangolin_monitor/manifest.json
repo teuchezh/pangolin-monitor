@@ -4,8 +4,9 @@
   "codeowners": ["@teuchezh"],
   "config_flow": true,
   "documentation": "https://github.com/teuchezh/pangolin-monitor",
-  "issue_tracker": "https://github.com/teuchezh/pangolin-monitor/issues",
+  "integration_type": "service",
   "iot_class": "cloud_polling",
-  "requirements": [],
+  "issue_tracker": "https://github.com/teuchezh/pangolin-monitor/issues",
+  "requirements": ["aiohttp"],
   "version": "0.1.4"
 }
