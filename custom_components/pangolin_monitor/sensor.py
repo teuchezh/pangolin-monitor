@@ -1,41 +1,99 @@
+import logging
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .pangolin_api import PangolinApiClient
+
+_LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    api: PangolinApiClient = hass.data[DOMAIN][entry.entry_id]
-    data = await api.get_sites()
+    """Создание сенсоров при загрузке интеграции."""
+    data = hass.data[DOMAIN][entry.entry_id]
+    coordinator = data["coordinator"]
 
-    sensors = []
-    for site in data.get("data", {}).get("sites", []):
-        sensors.append(PangolinTunnelSensor(site))
+    entities = []
+    sites = coordinator.data.get("sites", []) if coordinator.data else []
 
-    async_add_entities(sensors, update_before_add=True)
+    for site in sites:
+        site_id = site["id"]
+        site_name = site["name"]
 
-class PangolinTunnelSensor(SensorEntity):
-    def __init__(self, site):
-        self._attr_name = f"Pangolin Tunnel {site['name']}"
-        self._attr_unique_id = f"pangolin_tunnel_{site['siteId']}"
-        self._site = site
+        entities.append(SiteTrafficInSensor(coordinator, site_id, site_name))
+        entities.append(SiteTrafficOutSensor(coordinator, site_id, site_name))
+        entities.append(SiteOnlineSensor(coordinator, site_id, site_name))
+
+    async_add_entities(entities)
+
+
+class BasePangolinSensor(CoordinatorEntity, SensorEntity):
+    """Базовый класс сенсора Pangolin."""
+
+    def __init__(self, coordinator, site_id, site_name):
+        super().__init__(coordinator)
+        self.site_id = site_id
+        self.site_name = site_name
+
+    def _get_site(self):
+        sites = self.coordinator.data.get("sites", []) if self.coordinator.data else []
+        for site in sites:
+            if site["id"] == self.site_id:
+                return site
+        return None
+
+
+class SiteTrafficInSensor(BasePangolinSensor):
+    @property
+    def name(self):
+        return f"{self.site_name} Traffic In"
 
     @property
-    def state(self):
-        return "online" if self._site.get("online") else "offline"
+    def unique_id(self):
+        return f"pangolin_{self.site_id}_traffic_in"
 
     @property
-    def icon(self):
-        return "mdi:cloud-outline" if self._site.get("online") else "mdi:cloud-off-outline"
+    def native_unit_of_measurement(self):
+        return "MB"
 
     @property
-    def extra_state_attributes(self):
-        return {
-            "name": self._site.get("name"),
-            "site_id": self._site.get("siteId"),
-            "nice_id": self._site.get("niceId"),
-            "subnet": self._site.get("subnet"),
-            "megabytes_in": self._site.get("megabytesIn"),
-            "megabytes_out": self._site.get("megabytesOut"),
-            "type": self._site.get("type")
-        }
+    def native_value(self):
+        site = self._get_site()
+        return site.get("in_mb") if site else None
+
+
+class SiteTrafficOutSensor(BasePangolinSensor):
+    @property
+    def name(self):
+        return f"{self.site_name} Traffic Out"
+
+    @property
+    def unique_id(self):
+        return f"pangolin_{self.site_id}_traffic_out"
+
+    @property
+    def native_unit_of_measurement(self):
+        return "MB"
+
+    @property
+    def native_value(self):
+        site = self._get_site()
+        return site.get("out_mb") if site else None
+
+
+class SiteOnlineSensor(BasePangolinSensor):
+    @property
+    def name(self):
+        return f"{self.site_name} Online"
+
+    @property
+    def unique_id(self):
+        return f"pangolin_{self.site_id}_online"
+
+    @property
+    def device_class(self):
+        return "connectivity"
+
+    @property
+    def native_value(self):
+        site = self._get_site()
+        return "online" if site and site.get("online") else "offline"
