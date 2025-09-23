@@ -59,16 +59,20 @@ class PangolinApiClient:
                 try:
                     data = await resp.json()
                     _LOGGER.info("Login response data keys: %s", list(data.keys()) if isinstance(data, dict) else "Not a dict")
+                    _LOGGER.info("Full login response: %s", data)
                 except Exception as json_err:
                     _LOGGER.error("Failed to parse login response as JSON: %s", json_err)
                     raise PangolinAPIError("Invalid JSON response from server")
                 
-                self.token = data.get("token")
-                _LOGGER.info("Token received: %s", "Yes" if self.token else "No")
-
-            if not self.token:
-                _LOGGER.error("No token received during authentication")
-                raise PangolinAuthError("No token received during authentication")
+                # Проверяем успешность логина
+                if isinstance(data, dict) and data.get("success") and not data.get("error"):
+                    _LOGGER.info("Login successful according to response")
+                    # Токен передается через cookie, не через JSON
+                    self.token = "cookie_based_auth"
+                    _LOGGER.info("Using cookie-based authentication")
+                else:
+                    _LOGGER.error("Login failed according to response: %s", data)
+                    raise PangolinAuthError("Login failed according to server response")
                 
             _LOGGER.info("Authentication successful")
             
@@ -85,9 +89,9 @@ class PangolinApiClient:
             _LOGGER.info("Created new HTTP session for get_sites")
 
         url = f"{self.base_url}/api/v1/org/home/sites"
-        headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
+        headers = {}
         _LOGGER.info("Sites URL: %s", url)
-        _LOGGER.info("Using token: %s", "Yes" if self.token else "No")
+        _LOGGER.info("Using cookie-based authentication: %s", "Yes" if self.token == "cookie_based_auth" else "No")
 
         try:
             async with self.session.get(url, headers=headers) as resp:

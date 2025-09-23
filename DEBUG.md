@@ -71,8 +71,9 @@ logger:
 - Проверьте сетевое соединение
 
 ### "No token received during authentication"
-- Сервер не вернул токен в ответе
-- Возможно, изменился формат API ответа
+- **Исправлено в версии 0.1.10**: Интеграция теперь поддерживает cookie-based аутентификацию
+- Сервер Pangolin использует cookies вместо JWT токенов в JSON ответе
+- Токен передается через cookie `p_session_token`
 
 ### "Failed to parse response as JSON"
 - Сервер вернул не JSON ответ

@@ -42,21 +42,28 @@ async def validate_input(hass, data):
                 try:
                     login_data = await resp.json()
                     _LOGGER.info("Login response data keys: %s", list(login_data.keys()) if isinstance(login_data, dict) else "Not a dict")
+                    _LOGGER.info("Full login response: %s", login_data)
                 except Exception as json_err:
                     _LOGGER.error("Failed to parse login response as JSON: %s", json_err)
                     raise CannotConnect
 
-            token = login_data.get("token")
-            if not token:
-                _LOGGER.error("No token received in login response")
+            # Проверяем успешность логина
+            if isinstance(login_data, dict) and login_data.get("success") and not login_data.get("error"):
+                _LOGGER.info("Login successful according to response")
+                # Токен передается через cookie, не через JSON
+                token = "cookie_based_auth"
+                _LOGGER.info("Using cookie-based authentication")
+            else:
+                _LOGGER.error("Login failed according to response: %s", login_data)
                 raise InvalidAuth
             
             _LOGGER.info("Token received successfully")
 
             # проверяем доступ к sites
             sites_url = f"{data['base_url'].rstrip('/')}/api/v1/org/home/sites"
-            headers = {"Authorization": f"Bearer {token}"}
+            headers = {}
             _LOGGER.info("Testing sites access: %s", sites_url)
+            _LOGGER.info("Using cookie-based authentication for sites test")
             
             async with session.get(sites_url, headers=headers) as resp:
                 _LOGGER.info("Sites response status: %s", resp.status)
