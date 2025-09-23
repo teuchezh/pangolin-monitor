@@ -34,42 +34,15 @@ class PangolinApiClient:
             self.session = aiohttp.ClientSession()
             _LOGGER.info("Created new HTTP session")
 
-        # Сначала получаем CSRF токен
-        csrf_url = f"{self.base_url}/api/v1/auth/csrf"
-        _LOGGER.info("Getting CSRF token from: %s", csrf_url)
-        
-        try:
-            async with self.session.get(csrf_url) as resp:
-                _LOGGER.info("CSRF response status: %s", resp.status)
-                
-                if resp.status >= 400:
-                    text = await resp.text()
-                    _LOGGER.error("CSRF request failed with status %s: %s", resp.status, text)
-                    raise PangolinAPIError(f"CSRF request failed: {resp.status}")
-                
-                try:
-                    csrf_data = await resp.json()
-                    _LOGGER.info("CSRF response data keys: %s", list(csrf_data.keys()) if isinstance(csrf_data, dict) else "Not a dict")
-                except Exception as json_err:
-                    _LOGGER.error("Failed to parse CSRF response as JSON: %s", json_err)
-                    raise PangolinAPIError("Invalid JSON response from CSRF endpoint")
-                
-                csrf_token = csrf_data.get("csrfToken")
-                if not csrf_token:
-                    _LOGGER.error("No CSRF token received")
-                    raise PangolinAPIError("No CSRF token received")
-                
-                _LOGGER.info("CSRF token received successfully")
-                
-        except aiohttp.ClientError as err:
-            _LOGGER.error("Connection error during CSRF request: %s", err)
-            raise PangolinConnectionError(f"Connection error: {err}")
-
-        # Теперь выполняем логин с CSRF токеном
+        # Выполняем логин с фиксированным CSRF токеном
         login_url = f"{self.base_url}/api/v1/auth/login"
-        headers = {"X-CSRF-Token": csrf_token}
+        headers = {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": "x-csrf-protection"
+        }
         payload = {"email": self.email, "password": self.password}
         _LOGGER.info("Login URL: %s", login_url)
+        _LOGGER.info("Using fixed CSRF token: x-csrf-protection")
 
         try:
             async with self.session.post(login_url, json=payload, headers=headers) as resp:
