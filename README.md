@@ -35,7 +35,7 @@ If you are using mushroom cards, you can use the Jinja Generator script below to
 
 ```yaml
 type: tile
-entity: sensor.pangolin_tunnel_home_online
+entity: sensor.pangolin_monitor_tunnel_home_online
 state_content:
   - state
   - megabytes_in
@@ -50,7 +50,7 @@ _Important: Ensure that your tunnels are setup/viewable before doing this part._
 2. Paste the Jinja code below and copy the generated YAML to your clipboard.
 ```jinja
 {% for entity in states.sensor 
-     if entity.entity_id.startswith('sensor.pangolin_') %}
+     if entity.entity_id.startswith('sensor.pangolin_monitor_') %}
 - type: custom:mushroom-template-card
   primary: Tunnel {{ entity.attributes.site_name or entity.entity_id.split('_')[-1] }}
   secondary: >

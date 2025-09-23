@@ -44,7 +44,7 @@
 
 ```yaml
 type: tile
-entity: sensor.pangolin_tunnel_home_online
+entity: sensor.pangolin_monitor_tunnel_home_online
 state_content:
   - state
   - megabytes_in
@@ -60,7 +60,7 @@ _Важно: Убедитесь, что ваши туннели настроен
 
 ```jinja
 {% for entity in states.sensor 
-     if entity.entity_id.startswith('sensor.pangolin_') %}
+     if entity.entity_id.startswith('sensor.pangolin_monitor_') %}
 - type: custom:mushroom-template-card
   primary: Туннель {{ entity.attributes.site_name or entity.entity_id.split('_')[-1] }}
   secondary: >
@@ -91,7 +91,7 @@ _Примечание: убедитесь, что вставили код с п�
 Для каждого туннеля создаются следующие сенсоры:
 
 ### Traffic In (Входящий трафик)
-- **Entity ID**: `sensor.{site_id}_traffic_in`
+- **Entity ID**: `sensor.pangolin_monitor_{site_id}_traffic_in`
 - **Единица измерения**: MB
 - **Иконка**: 📥 mdi:download
 - **Атрибуты**: 
@@ -105,13 +105,13 @@ _Примечание: убедитесь, что вставили код с п�
   - `update_available` - доступно ли обновление
 
 ### Traffic Out (Исходящий трафик)
-- **Entity ID**: `sensor.{site_id}_traffic_out`
+- **Entity ID**: `sensor.pangolin_monitor_{site_id}_traffic_out`
 - **Единица измерения**: MB
 - **Иконка**: 📤 mdi:upload
 - **Атрибуты**: те же, что и у Traffic In
 
 ### Online Status (Статус подключения)
-- **Entity ID**: `sensor.{site_id}_online`
+- **Entity ID**: `sensor.pangolin_monitor_{site_id}_online`
 - **Значения**: "online" / "offline"
 - **Device Class**: connectivity
 - **Иконка**: ☁️ mdi:cloud-check (онлайн) / mdi:cloud-off (оффлайн)
@@ -134,7 +134,7 @@ automation:
   - alias: "Pangolin Tunnel Offline"
     trigger:
       - platform: state
-        entity_id: sensor.pangolin_*
+        entity_id: sensor.pangolin_monitor_*
         to: "offline"
     action:
       - service: notify.mobile_app_your_phone

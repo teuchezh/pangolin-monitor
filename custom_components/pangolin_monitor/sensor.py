@@ -62,7 +62,7 @@ class SiteTrafficInSensor(BasePangolinSensor):
 
     @property
     def unique_id(self):
-        return f"{self.site_id}_traffic_in"
+        return f"pangolin_monitor_{self.site_id}_traffic_in"
 
     @property
     def native_unit_of_measurement(self):
@@ -103,7 +103,7 @@ class SiteTrafficOutSensor(BasePangolinSensor):
 
     @property
     def unique_id(self):
-        return f"{self.site_id}_traffic_out"
+        return f"pangolin_monitor_{self.site_id}_traffic_out"
 
     @property
     def native_unit_of_measurement(self):
@@ -144,7 +144,7 @@ class SiteOnlineSensor(BasePangolinSensor):
 
     @property
     def unique_id(self):
-        return f"{self.site_id}_online"
+        return f"pangolin_monitor_{self.site_id}_online"
 
     @property
     def device_class(self):

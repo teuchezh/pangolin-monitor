@@ -1,1 +1,1 @@
-DOMAIN = "pangolin"
+DOMAIN = "pangolin_monitor"
