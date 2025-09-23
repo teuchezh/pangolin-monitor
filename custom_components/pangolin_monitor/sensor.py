@@ -10,21 +10,37 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Создание сенсоров при загрузке интеграции."""
-    data = hass.data[DOMAIN][entry.entry_id]
-    coordinator = data["coordinator"]
+    _LOGGER.info("Setting up sensors for entry: %s", entry.entry_id)
+    
+    try:
+        data = hass.data[DOMAIN][entry.entry_id]
+        coordinator = data["coordinator"]
+        _LOGGER.info("Found coordinator data")
 
-    entities = []
-    sites = coordinator.data.get("sites", []) if coordinator.data else []
+        entities = []
+        sites = coordinator.data.get("sites", []) if coordinator.data else []
+        _LOGGER.info("Found %d sites in coordinator data", len(sites))
 
-    for site in sites:
-        site_id = site["id"]
-        site_name = site["name"]
+        for site in sites:
+            site_id = site.get("id")
+            site_name = site.get("name")
+            _LOGGER.info("Creating sensors for site: %s (ID: %s)", site_name, site_id)
 
-        entities.append(SiteTrafficInSensor(coordinator, site_id, site_name))
-        entities.append(SiteTrafficOutSensor(coordinator, site_id, site_name))
-        entities.append(SiteOnlineSensor(coordinator, site_id, site_name))
+            if not site_id or not site_name:
+                _LOGGER.warning("Skipping site with missing ID or name: %s", site)
+                continue
 
-    async_add_entities(entities)
+            entities.append(SiteTrafficInSensor(coordinator, site_id, site_name))
+            entities.append(SiteTrafficOutSensor(coordinator, site_id, site_name))
+            entities.append(SiteOnlineSensor(coordinator, site_id, site_name))
+
+        _LOGGER.info("Created %d entities", len(entities))
+        async_add_entities(entities)
+        _LOGGER.info("Successfully added entities to Home Assistant")
+        
+    except Exception as err:
+        _LOGGER.error("Error setting up sensors: %s", err, exc_info=True)
+        raise
 
 
 class BasePangolinSensor(CoordinatorEntity, SensorEntity):

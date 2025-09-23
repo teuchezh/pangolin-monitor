@@ -27,56 +27,91 @@ class PangolinApiClient:
 
     async def authenticate(self) -> None:
         """Аутентификация и получение токена."""
+        _LOGGER.info("Starting authentication for email: %s", self.email)
+        _LOGGER.info("Base URL: %s", self.base_url)
+        
         if self.session is None:
             self.session = aiohttp.ClientSession()
+            _LOGGER.info("Created new HTTP session")
 
         url = f"{self.base_url}/api/v1/auth/login"
         payload = {"email": self.email, "password": self.password}
+        _LOGGER.info("Login URL: %s", url)
 
         try:
             async with self.session.post(url, json=payload) as resp:
+                _LOGGER.info("Login response status: %s", resp.status)
+                
                 if resp.status == 401:
                     _LOGGER.error("Authentication failed: Invalid credentials")
                     raise PangolinAuthError("Invalid credentials")
                 elif resp.status >= 400:
                     text = await resp.text()
-                    _LOGGER.error("Auth failed: %s", text)
+                    _LOGGER.error("Auth failed with status %s: %s", resp.status, text)
                     raise PangolinAPIError(f"Authentication failed: {resp.status}")
-                data = await resp.json()
+                
+                try:
+                    data = await resp.json()
+                    _LOGGER.info("Login response data keys: %s", list(data.keys()) if isinstance(data, dict) else "Not a dict")
+                except Exception as json_err:
+                    _LOGGER.error("Failed to parse login response as JSON: %s", json_err)
+                    raise PangolinAPIError("Invalid JSON response from server")
+                
                 self.token = data.get("token")
+                _LOGGER.info("Token received: %s", "Yes" if self.token else "No")
 
             if not self.token:
+                _LOGGER.error("No token received during authentication")
                 raise PangolinAuthError("No token received during authentication")
+                
+            _LOGGER.info("Authentication successful")
+            
         except aiohttp.ClientError as err:
             _LOGGER.error("Connection error during authentication: %s", err)
             raise PangolinConnectionError(f"Connection error: {err}")
 
     async def get_sites(self) -> dict:
         """Получение информации о сайтах (туннелях, трафике, статусах)."""
+        _LOGGER.info("Getting sites data")
+        
         if not self.session:
             self.session = aiohttp.ClientSession()
+            _LOGGER.info("Created new HTTP session for get_sites")
 
         url = f"{self.base_url}/api/v1/org/home/sites"
         headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
+        _LOGGER.info("Sites URL: %s", url)
+        _LOGGER.info("Using token: %s", "Yes" if self.token else "No")
 
         try:
             async with self.session.get(url, headers=headers) as resp:
+                _LOGGER.info("Sites response status: %s", resp.status)
+                
                 if resp.status == 401:
                     _LOGGER.error("Authentication failed when getting sites")
                     raise PangolinAuthError("Token expired or invalid")
                 elif resp.status >= 400:
                     text = await resp.text()
-                    _LOGGER.error("Failed to get sites: %s", text)
+                    _LOGGER.error("Failed to get sites with status %s: %s", resp.status, text)
                     raise PangolinAPIError(f"Get sites failed: {resp.status}")
-                payload = await resp.json()
+                
+                try:
+                    payload = await resp.json()
+                    _LOGGER.info("Sites response data keys: %s", list(payload.keys()) if isinstance(payload, dict) else "Not a dict")
+                except Exception as json_err:
+                    _LOGGER.error("Failed to parse sites response as JSON: %s", json_err)
+                    raise PangolinAPIError("Invalid JSON response from sites endpoint")
+                    
         except aiohttp.ClientError as err:
             _LOGGER.error("Connection error when getting sites: %s", err)
             raise PangolinConnectionError(f"Connection error: {err}")
 
         sites = payload.get("data", {}).get("sites", [])
+        _LOGGER.info("Found %d sites in response", len(sites))
+        
         result = []
         for site in sites:
-            result.append({
+            site_data = {
                 "id": site.get("siteId"),
                 "name": site.get("name"),
                 "type": site.get("type"),
@@ -87,8 +122,12 @@ class PangolinApiClient:
                 "address": site.get("address"),
                 "version": site.get("newtVersion"),
                 "update": site.get("newtUpdateAvailable"),
-            })
+            }
+            result.append(site_data)
+            _LOGGER.info("Processed site: %s (ID: %s, Online: %s)", 
+                        site_data.get("name"), site_data.get("id"), site_data.get("online"))
 
+        _LOGGER.info("Returning %d processed sites", len(result))
         return {"sites": result}
 
     async def close(self) -> None:

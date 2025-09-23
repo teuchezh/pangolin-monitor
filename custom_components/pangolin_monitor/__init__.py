@@ -14,12 +14,24 @@ PLATFORMS = ["sensor"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Настройка интеграции Pangolin Monitor через config entry."""
+    _LOGGER.info("Setting up Pangolin Monitor integration")
+    _LOGGER.info("Entry data keys: %s", list(entry.data.keys()))
+    
     base_url = entry.data["base_url"]
     email = entry.data["email"]
     password = entry.data["password"]
+    
+    _LOGGER.info("Base URL: %s", base_url)
+    _LOGGER.info("Email: %s", email)
 
-    api = PangolinApiClient(email, password, base_url)
-    await api.authenticate()
+    try:
+        api = PangolinApiClient(email, password, base_url)
+        _LOGGER.info("Created API client, attempting authentication")
+        await api.authenticate()
+        _LOGGER.info("Authentication successful")
+    except Exception as err:
+        _LOGGER.error("Failed to authenticate during setup: %s", err, exc_info=True)
+        raise
 
     async def async_update_data():
         """Функция, которая будет вызываться координатором каждые 5 минут."""
