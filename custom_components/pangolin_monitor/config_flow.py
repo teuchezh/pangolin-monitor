@@ -17,13 +17,40 @@ async def validate_input(hass, data):
     
     try:
         async with aiohttp.ClientSession() as session:
-            # сначала логинимся
+            # Сначала получаем CSRF токен
+            csrf_url = f"{data['base_url'].rstrip('/')}/api/v1/auth/csrf"
+            _LOGGER.info("Getting CSRF token from: %s", csrf_url)
+            
+            async with session.get(csrf_url) as resp:
+                _LOGGER.info("CSRF response status: %s", resp.status)
+                
+                if resp.status >= 400:
+                    response_text = await resp.text()
+                    _LOGGER.error("CSRF request failed with status %s: %s", resp.status, response_text)
+                    raise CannotConnect
+                
+                try:
+                    csrf_data = await resp.json()
+                    _LOGGER.info("CSRF response data keys: %s", list(csrf_data.keys()) if isinstance(csrf_data, dict) else "Not a dict")
+                except Exception as json_err:
+                    _LOGGER.error("Failed to parse CSRF response as JSON: %s", json_err)
+                    raise CannotConnect
+                
+                csrf_token = csrf_data.get("csrfToken")
+                if not csrf_token:
+                    _LOGGER.error("No CSRF token received")
+                    raise CannotConnect
+                
+                _LOGGER.info("CSRF token received successfully")
+            
+            # Теперь логинимся с CSRF токеном
             login_url = f"{data['base_url'].rstrip('/')}/api/v1/auth/login"
+            headers = {"X-CSRF-Token": csrf_token}
             payload = {"email": data["email"], "password": data["password"]}
             
             _LOGGER.info("Attempting login to: %s", login_url)
 
-            async with session.post(login_url, json=payload) as resp:
+            async with session.post(login_url, json=payload, headers=headers) as resp:
                 _LOGGER.info("Login response status: %s", resp.status)
                 
                 if resp.status == 401:
