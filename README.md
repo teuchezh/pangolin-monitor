@@ -1,5 +1,7 @@
 # Pangolin Monitor Integration for Home Assistant
 
+[🇷🇺 Русская версия](README.ru.md) | [🇺🇸 English Version](README.md)
+
 ![https://github.com/fosrl/pangolin](/images/logo.png)
 
 This integration connects Home Assistant with [Pangolin](https://github.com/fosrl/pangolin)  
@@ -33,7 +35,7 @@ If you are using mushroom cards, you can use the Jinja Generator script below to
 
 ```yaml
 type: tile
-entity: sensor.pangolin_tunnel_home
+entity: sensor.pangolin_tunnel_home_online
 state_content:
   - state
   - megabytes_in
@@ -48,9 +50,9 @@ _Important: Ensure that your tunnels are setup/viewable before doing this part._
 2. Paste the Jinja code below and copy the generated YAML to your clipboard.
 ```jinja
 {% for entity in states.sensor 
-     if entity.entity_id.startswith('sensor.pangolin_tunnel_') %}
+     if entity.entity_id.startswith('sensor.pangolin_') %}
 - type: custom:mushroom-template-card
-  primary: Tunnel {{ entity.attributes.name or entity.entity_id.split('_')[-1] }}
+  primary: Tunnel {{ entity.attributes.site_name or entity.entity_id.split('_')[-1] }}
   secondary: >
     Status: {{ '{{ states("' ~ entity.entity_id ~ '") }}' }}
     In: {{ '{{ (state_attr("' ~ entity.entity_id ~ '", "megabytes_in") / 1024) | round(2) }} GB ·

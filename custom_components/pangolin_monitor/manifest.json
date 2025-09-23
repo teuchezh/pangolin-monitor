@@ -1,5 +1,5 @@
 {
-  "domain": "pangolin_monitor",
+  "domain": "pangolin",
   "name": "Pangolin Monitor",
   "codeowners": ["@teuchezh"],
   "config_flow": true,

@@ -5,7 +5,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import DOMAIN
-from .pangolin_api import PangolinApiClient
+from .pangolin_api import PangolinApiClient, PangolinAuthError, PangolinConnectionError, PangolinAPIError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,12 +23,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     async def async_update_data():
         """Функция, которая будет вызываться координатором каждые 5 минут."""
-        return await api.get_sites()  # метод в pangolin_api.py должен возвращать JSON с сайтами
+        try:
+            return await api.get_sites()  # метод в pangolin_api.py должен возвращать JSON с сайтами
+        except (PangolinAuthError, PangolinConnectionError, PangolinAPIError) as err:
+            _LOGGER.error("Error updating data: %s", err)
+            # Возвращаем пустые данные вместо краша
+            return {"sites": []}
 
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
-        name="pangolin_monitor",
+        name="pangolin",
         update_method=async_update_data,
         update_interval=timedelta(minutes=5),
     )

@@ -1,7 +1,20 @@
 import aiohttp
 import logging
+from homeassistant.exceptions import HomeAssistantError
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class PangolinAuthError(HomeAssistantError):
+    """Ошибка аутентификации Pangolin."""
+
+
+class PangolinConnectionError(HomeAssistantError):
+    """Ошибка соединения с Pangolin."""
+
+
+class PangolinAPIError(HomeAssistantError):
+    """Ошибка API Pangolin."""
 
 
 class PangolinApiClient:
@@ -20,16 +33,23 @@ class PangolinApiClient:
         url = f"{self.base_url}/api/v1/auth/login"
         payload = {"email": self.email, "password": self.password}
 
-        async with self.session.post(url, json=payload) as resp:
-            if resp.status != 200:
-                text = await resp.text()
-                _LOGGER.error("Auth failed: %s", text)
-                raise Exception(f"Authentication failed: {resp.status}")
-            data = await resp.json()
-            self.token = data.get("token")
+        try:
+            async with self.session.post(url, json=payload) as resp:
+                if resp.status == 401:
+                    _LOGGER.error("Authentication failed: Invalid credentials")
+                    raise PangolinAuthError("Invalid credentials")
+                elif resp.status >= 400:
+                    text = await resp.text()
+                    _LOGGER.error("Auth failed: %s", text)
+                    raise PangolinAPIError(f"Authentication failed: {resp.status}")
+                data = await resp.json()
+                self.token = data.get("token")
 
-        if not self.token:
-            raise Exception("No token received during authentication")
+            if not self.token:
+                raise PangolinAuthError("No token received during authentication")
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Connection error during authentication: %s", err)
+            raise PangolinConnectionError(f"Connection error: {err}")
 
     async def get_sites(self) -> dict:
         """Получение информации о сайтах (туннелях, трафике, статусах)."""
@@ -39,12 +59,19 @@ class PangolinApiClient:
         url = f"{self.base_url}/api/v1/org/home/sites"
         headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
 
-        async with self.session.get(url, headers=headers) as resp:
-            if resp.status != 200:
-                text = await resp.text()
-                _LOGGER.error("Failed to get sites: %s", text)
-                raise Exception(f"Get sites failed: {resp.status}")
-            payload = await resp.json()
+        try:
+            async with self.session.get(url, headers=headers) as resp:
+                if resp.status == 401:
+                    _LOGGER.error("Authentication failed when getting sites")
+                    raise PangolinAuthError("Token expired or invalid")
+                elif resp.status >= 400:
+                    text = await resp.text()
+                    _LOGGER.error("Failed to get sites: %s", text)
+                    raise PangolinAPIError(f"Get sites failed: {resp.status}")
+                payload = await resp.json()
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Connection error when getting sites: %s", err)
+            raise PangolinConnectionError(f"Connection error: {err}")
 
         sites = payload.get("data", {}).get("sites", [])
         result = []
