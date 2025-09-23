@@ -229,7 +229,11 @@ class PangolinOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Coerce(int), 
                     vol.Range(min=1, max=720)
                 ),
-            })
+            }),
+            description_placeholders={
+                "title": "Pangolin Monitor Options",
+                "description": "Configure Pangolin Monitor settings"
+            }
         )
 
 
