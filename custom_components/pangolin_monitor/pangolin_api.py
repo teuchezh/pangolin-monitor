@@ -98,7 +98,7 @@ class PangolinApiClient:
                 _LOGGER.info("Sites response status: %s", resp.status)
                 
                 if resp.status == 401:
-                    _LOGGER.error("Authentication failed when getting sites")
+                    _LOGGER.error("Authentication failed when getting sites - token expired or invalid")
                     raise PangolinAuthError("Token expired or invalid")
                 elif resp.status >= 400:
                     text = await resp.text()

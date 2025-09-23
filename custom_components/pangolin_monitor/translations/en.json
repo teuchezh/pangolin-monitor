@@ -7,6 +7,16 @@
         "data": {
           "base_url": "Base URL",
           "email": "Email",
+          "password": "Password",
+          "update_interval": "Update interval (minutes)"
+        }
+      },
+      "reauth": {
+        "title": "Reauthenticate with Pangolin",
+        "description": "Your Pangolin credentials are no longer valid. Please re-enter them.",
+        "data": {
+          "base_url": "Base URL",
+          "email": "Email",
           "password": "Password"
         }
       }
@@ -15,6 +25,17 @@
       "cannot_connect": "Cannot connect to the service, please check your API Token and internet connection.",
       "invalid_auth": "Invalid authentication, please check your credentials.",
       "unknown": "Unknown error, please check the logs."
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Pangolin Monitor Options",
+          "description": "Configure Pangolin Monitor settings",
+          "data": {
+            "update_interval": "Update interval (minutes)"
+          }
+        }
+      }
     }
   }
 }

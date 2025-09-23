@@ -91,7 +91,9 @@ class SiteTrafficInSensor(BasePangolinSensor):
     @property
     def native_value(self):
         site = self._get_site()
-        return site.get("in_mb") if site else None
+        if site and site.get("in_mb") is not None:
+            return round(float(site.get("in_mb")), 2)
+        return None
 
     @property
     def extra_state_attributes(self):
@@ -99,8 +101,8 @@ class SiteTrafficInSensor(BasePangolinSensor):
         site = self._get_site()
         if site:
             return {
-                "megabytes_in": site.get("in_mb"),
-                "megabytes_out": site.get("out_mb"),
+                "megabytes_in": round(float(site.get("in_mb")), 2) if site.get("in_mb") is not None else None,
+                "megabytes_out": round(float(site.get("out_mb")), 2) if site.get("out_mb") is not None else None,
                 "site_id": site.get("id"),
                 "site_name": site.get("name"),
                 "site_type": site.get("type"),
@@ -132,7 +134,9 @@ class SiteTrafficOutSensor(BasePangolinSensor):
     @property
     def native_value(self):
         site = self._get_site()
-        return site.get("out_mb") if site else None
+        if site and site.get("out_mb") is not None:
+            return round(float(site.get("out_mb")), 2)
+        return None
 
     @property
     def extra_state_attributes(self):
@@ -140,8 +144,8 @@ class SiteTrafficOutSensor(BasePangolinSensor):
         site = self._get_site()
         if site:
             return {
-                "megabytes_in": site.get("in_mb"),
-                "megabytes_out": site.get("out_mb"),
+                "megabytes_in": round(float(site.get("in_mb")), 2) if site.get("in_mb") is not None else None,
+                "megabytes_out": round(float(site.get("out_mb")), 2) if site.get("out_mb") is not None else None,
                 "site_id": site.get("id"),
                 "site_name": site.get("name"),
                 "site_type": site.get("type"),
@@ -182,8 +186,8 @@ class SiteOnlineSensor(BasePangolinSensor):
         site = self._get_site()
         if site:
             return {
-                "megabytes_in": site.get("in_mb"),
-                "megabytes_out": site.get("out_mb"),
+                "megabytes_in": round(float(site.get("in_mb")), 2) if site.get("in_mb") is not None else None,
+                "megabytes_out": round(float(site.get("out_mb")), 2) if site.get("out_mb") is not None else None,
                 "site_id": site.get("id"),
                 "site_name": site.get("name"),
                 "site_type": site.get("type"),

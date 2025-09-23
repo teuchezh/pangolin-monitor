@@ -131,9 +131,106 @@ class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required("base_url"): str,
             vol.Required("email"): str,
             vol.Required("password"): str,
+            vol.Optional("update_interval", default=5): vol.All(
+                vol.Coerce(int), 
+                vol.Range(min=1, max=720)
+            ),
         })
 
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Получить options flow для настройки интеграции."""
+        return PangolinOptionsFlowHandler(config_entry)
+
+    async def async_step_reauth(self, user_input=None):
+        """Обработка reauth flow для обновления учетных данных."""
+        if user_input is not None:
+            # Проверяем новые учетные данные
+            try:
+                await validate_input(self.hass, user_input)
+            except (CannotConnect, PangolinConnectionError):
+                return self.async_show_form(
+                    step_id="reauth",
+                    data_schema=vol.Schema({
+                        vol.Required("base_url", default=user_input.get("base_url")): str,
+                        vol.Required("email", default=user_input.get("email")): str,
+                        vol.Required("password"): str,
+                    }),
+                    errors={"base": "cannot_connect"}
+                )
+            except (InvalidAuth, PangolinAuthError):
+                return self.async_show_form(
+                    step_id="reauth",
+                    data_schema=vol.Schema({
+                        vol.Required("base_url", default=user_input.get("base_url")): str,
+                        vol.Required("email", default=user_input.get("email")): str,
+                        vol.Required("password"): str,
+                    }),
+                    errors={"base": "invalid_auth"}
+                )
+            except (UnknownError, PangolinAPIError):
+                return self.async_show_form(
+                    step_id="reauth",
+                    data_schema=vol.Schema({
+                        vol.Required("base_url", default=user_input.get("base_url")): str,
+                        vol.Required("email", default=user_input.get("email")): str,
+                        vol.Required("password"): str,
+                    }),
+                    errors={"base": "unknown"}
+                )
+            else:
+                # Обновляем конфигурацию
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    data={**self.config_entry.data, **user_input}
+                )
+                await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                return self.async_abort(reason="reauth_successful")
+
+        return self.async_show_form(
+            step_id="reauth",
+            data_schema=vol.Schema({
+                vol.Required("base_url", default=self.config_entry.data.get("base_url")): str,
+                vol.Required("email", default=self.config_entry.data.get("email")): str,
+                vol.Required("password"): str,
+            })
+        )
+
+
+class PangolinOptionsFlowHandler(config_entries.OptionsFlow):
+    """Обработчик options flow для Pangolin Monitor."""
+
+    def __init__(self, config_entry):
+        """Инициализация options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        """Управление опциями интеграции."""
+        if user_input is not None:
+            # Обновляем конфигурацию
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                data={**self.config_entry.data, **user_input}
+            )
+            # Перезагружаем интеграцию для применения новых настроек
+            await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+            return self.async_create_entry(title="", data={})
+
+        # Получаем текущие значения
+        current_interval = self.config_entry.data.get("update_interval", 5)
+        
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Optional("update_interval", default=current_interval): vol.All(
+                    vol.Coerce(int), 
+                    vol.Range(min=1, max=720)
+                ),
+            })
+        )
 
 
 class CannotConnect(HomeAssistantError):

@@ -15,6 +15,10 @@ I will be glad to receive suggestions for new functionality.
 - Authenticate using email and password
 - Tracks tunnels/sites registered in Pangolin
 - Displays state (online/offline) and stats per tunnel
+- Configurable update interval (1 minute to 12 hours)
+- Rounded traffic values to 2 decimal places
+- Change settings after installation through Home Assistant interface
+- Automatic re-authentication when token expires
 
 ## Pre-Reqs
 1. A admin user in Pangolin (normal user wont poll tunnel statuses).
@@ -28,7 +32,25 @@ I will be glad to receive suggestions for new functionality.
 3. Paste the URL for this repo into the Repository box, change the type to 'Integrations, and Press Add
 4. Go to Integrations
 5. Add new integration -> Pangolin Monitor
-6. Provide your Pangolin email, password, and server base URL
+6. Provide your Pangolin email, password, server base URL, and update interval (default 5 minutes)
+
+## Configuration After Installation
+
+After installing the integration, you can change settings at any time:
+
+1. Go to **Settings** → **Devices & Services**
+2. Find **Pangolin Monitor** in the integrations list
+3. Click on the integration
+4. Click **Configure**
+5. Change the update interval and save
+
+### Re-authentication
+
+If your credentials have changed or expired:
+
+1. In the integration settings, click **Re-authenticate**
+2. Enter new credentials
+3. The integration will automatically update
 
 If you are using mushroom cards, you can use the Jinja Generator script below to generate cards for all your tunnels at once. Or you can use the built-in "Tile" component or any other component you prefer.
 ![tile](images/tile.png)
