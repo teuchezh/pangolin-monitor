@@ -8,6 +8,7 @@
           "base_url": "Базовый URL",
           "email": "Email",
           "password": "Пароль",
+          "org": "Организация",
           "update_interval": "Интервал обновления (минуты)"
         }
       },
@@ -17,6 +18,7 @@
         "data": {
           "base_url": "Базовый URL",
           "email": "Email",
+          "org": "Организация",
           "password": "Пароль"
         }
       }
