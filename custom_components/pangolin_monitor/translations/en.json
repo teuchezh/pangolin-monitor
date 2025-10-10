@@ -8,6 +8,7 @@
           "base_url": "Base URL",
           "email": "Email",
           "password": "Password",
+          "org": "Organization",
           "update_interval": "Update interval (minutes)"
         }
       },
@@ -18,6 +19,7 @@
           "base_url": "Base URL",
           "email": "Email",
           "password": "Password"
+          "org": "Organization",
         }
       }
     },
