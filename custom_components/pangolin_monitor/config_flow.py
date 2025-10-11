@@ -9,7 +9,26 @@ from .pangolin_api import PangolinAuthError, PangolinConnectionError, PangolinAP
 
 
 async def validate_input(hass, data):
-    """Проверка логина и получения доступа к API."""
+    """
+    Validate credentials and confirm API access to a Pangolin instance.
+    
+    Attempts to authenticate using the provided credentials and verifies access to the organization's sites endpoint. On success returns a dictionary suitable for creating a config entry.
+    
+    Parameters:
+        data (dict): Configuration values required for validation. Must include:
+            - base_url (str): Base URL of the Pangolin API.
+            - email (str): Account email for authentication.
+            - password (str): Account password for authentication.
+            - org (str): Organization slug used to build the sites endpoint.
+    
+    Returns:
+        dict: A mapping with "title" set to "Pangolin Monitor" on successful validation.
+    
+    Raises:
+        InvalidAuth: When authentication fails due to invalid credentials or login response indicates failure.
+        CannotConnect: When the integration cannot reach the API or receives error responses.
+        UnknownError: For unexpected exceptions encountered during validation.
+    """
     import logging
     _LOGGER = logging.getLogger(__name__)
     
@@ -60,7 +79,7 @@ async def validate_input(hass, data):
             _LOGGER.info("Token received successfully")
 
             # проверяем доступ к sites
-            sites_url = f"{data['base_url'].rstrip('/')}/api/v1/org/home/sites"
+            sites_url = f"{data['base_url'].rstrip('/')}/api/v1/org/{data['org']}/sites"
             headers = {}
             _LOGGER.info("Testing sites access: %s", sites_url)
             _LOGGER.info("Using cookie-based authentication for sites test")
@@ -101,6 +120,22 @@ class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
+        """
+        Handle the user step of the Pangolin configuration flow.
+        
+        Validates credentials and connectivity using validate_input; on success creates a config entry, otherwise redisplays the form with validation error codes. Error codes set on failure: "cannot_connect", "invalid_auth", or "unknown".
+        
+        Parameters:
+        	user_input (dict | None): User-provided configuration values. When provided, expected keys:
+        		- base_url (str): Base URL of the Pangolin instance.
+        		- email (str): Account email.
+        		- password (str): Account password.
+        		- org (str): Organization slug to access sites.
+        		- update_interval (int, optional): Polling interval in minutes (1–720). Defaults to 5 if omitted.
+        
+        Returns:
+        	FlowResult: A flow result that either creates the config entry (on successful validation) or returns a form schema with any errors to display to the user.
+        """
         import logging
         _LOGGER = logging.getLogger(__name__)
         
@@ -131,6 +166,7 @@ class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required("base_url"): str,
             vol.Required("email"): str,
             vol.Required("password"): str,
+            vol.Required("org"): str,
             vol.Optional("update_interval", default=5): vol.All(
                 vol.Coerce(int), 
                 vol.Range(min=1, max=720)

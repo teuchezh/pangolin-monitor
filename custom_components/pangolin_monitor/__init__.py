@@ -13,13 +13,29 @@ PLATFORMS = ["sensor"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Настройка интеграции Pangolin Monitor через config entry."""
+    """
+    Set up the Pangolin Monitor integration from a config entry.
+    
+    Initializes a Pangolin API client (including the configured organization), authenticates it, creates a DataUpdateCoordinator that periodically fetches site data and handles authentication/connection errors (including triggering a reauthentication flow when needed), stores the API client and coordinator on hass.data, and forwards platform setup.
+    
+    Parameters:
+        entry (ConfigEntry): Config entry containing required keys:
+            - "base_url": base URL of the Pangolin API
+            - "email": account email
+            - "password": account password
+            - "org": organization identifier
+            - "update_interval" (optional): polling interval in minutes (defaults to 5)
+    
+    Returns:
+        True if the config entry was set up successfully.
+    """
     _LOGGER.info("Setting up Pangolin Monitor integration")
     _LOGGER.info("Entry data keys: %s", list(entry.data.keys()))
     
     base_url = entry.data["base_url"]
     email = entry.data["email"]
     password = entry.data["password"]
+    org = entry.data["org"]
     update_interval = entry.data.get("update_interval", 5)  # По умолчанию 5 минут
     
     _LOGGER.info("Base URL: %s", base_url)
@@ -27,7 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.info("Update interval: %s minutes", update_interval)
 
     try:
-        api = PangolinApiClient(email, password, base_url)
+        api = PangolinApiClient(email, password, base_url, org)
         _LOGGER.info("Created API client, attempting authentication")
         await api.authenticate()
         _LOGGER.info("Authentication successful")

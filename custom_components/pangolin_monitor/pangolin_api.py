@@ -18,10 +18,21 @@ class PangolinAPIError(HomeAssistantError):
 
 
 class PangolinApiClient:
-    def __init__(self, email: str, password: str, base_url: str) -> None:
+    def __init__(self, email: str, password: str, base_url: str, org: str) -> None:
+        """
+        Initialize the Pangolin API client with credentials, base URL, and organization.
+        
+        Parameters:
+            email (str): Account email used for authentication.
+            password (str): Account password used for authentication.
+            base_url (str): Base URL of the Pangolin API; trailing slash will be removed.
+            org (str): Organization identifier used to scope API requests.
+        
+        """
         self.email = email
         self.password = password
         self.base_url = base_url.rstrip("/")
+        self.org = org
         self.session: aiohttp.ClientSession | None = None
         self.token: str | None = None
 
@@ -81,14 +92,36 @@ class PangolinApiClient:
             raise PangolinConnectionError(f"Connection error: {err}")
 
     async def get_sites(self) -> dict:
-        """Получение информации о сайтах (туннелях, трафике, статусах)."""
+        """
+        Retrieve and normalize site information for the configured organization.
+        
+        Requests the organization-scoped sites endpoint, parses the JSON payload, and returns a list of sites with selected fields (id, name, type, in_mb, out_mb, online, subnet, address, version, update).
+        
+        Returns:
+            dict: A dictionary with a single key "sites" whose value is a list of site dictionaries. Each site dictionary contains:
+                - id: site identifier (from `siteId`)
+                - name: site name (from `name`)
+                - type: site type (from `type`)
+                - in_mb: incoming traffic in megabytes (from `megabytesIn`)
+                - out_mb: outgoing traffic in megabytes (from `megabytesOut`)
+                - online: online status (from `online`)
+                - subnet: subnet information (from `subnet`)
+                - address: site address (from `address`)
+                - version: software/version string (from `newtVersion`)
+                - update: whether an update is available (from `newtUpdateAvailable`)
+        
+        Raises:
+            PangolinAuthError: If authentication is invalid or expired (HTTP 401) or the server indicates login problems.
+            PangolinAPIError: If the API returns a 4xx/5xx status (other than 401) or the response is not valid JSON.
+            PangolinConnectionError: If an underlying network/client error occurs while making the request.
+        """
         _LOGGER.info("Getting sites data")
         
         if not self.session:
             self.session = aiohttp.ClientSession()
             _LOGGER.info("Created new HTTP session for get_sites")
 
-        url = f"{self.base_url}/api/v1/org/home/sites"
+        url = f"{self.base_url}/api/v1/org/{self.org}/sites"
         headers = {}
         _LOGGER.info("Sites URL: %s", url)
         _LOGGER.info("Using cookie-based authentication: %s", "Yes" if self.token == "cookie_based_auth" else "No")
