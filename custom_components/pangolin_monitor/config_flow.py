@@ -60,7 +60,7 @@ async def validate_input(hass, data):
             _LOGGER.info("Token received successfully")
 
             # проверяем доступ к sites
-            sites_url = f"{data['base_url'].rstrip('/')}/api/v1/org/home/sites"
+            sites_url = f"{data['base_url'].rstrip('/')}/api/v1/org/{data['org']}/sites"
             headers = {}
             _LOGGER.info("Testing sites access: %s", sites_url)
             _LOGGER.info("Using cookie-based authentication for sites test")
@@ -131,6 +131,7 @@ class PangolinConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required("base_url"): str,
             vol.Required("email"): str,
             vol.Required("password"): str,
+            vol.Required("org"): str,
             vol.Optional("update_interval", default=5): vol.All(
                 vol.Coerce(int), 
                 vol.Range(min=1, max=720)

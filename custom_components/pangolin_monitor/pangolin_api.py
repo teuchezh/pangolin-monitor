@@ -18,10 +18,11 @@ class PangolinAPIError(HomeAssistantError):
 
 
 class PangolinApiClient:
-    def __init__(self, email: str, password: str, base_url: str) -> None:
+    def __init__(self, email: str, password: str, base_url: str, org: str) -> None:
         self.email = email
         self.password = password
         self.base_url = base_url.rstrip("/")
+        self.org = org
         self.session: aiohttp.ClientSession | None = None
         self.token: str | None = None
 
@@ -88,7 +89,7 @@ class PangolinApiClient:
             self.session = aiohttp.ClientSession()
             _LOGGER.info("Created new HTTP session for get_sites")
 
-        url = f"{self.base_url}/api/v1/org/home/sites"
+        url = f"{self.base_url}/api/v1/org/{self.org}/sites"
         headers = {}
         _LOGGER.info("Sites URL: %s", url)
         _LOGGER.info("Using cookie-based authentication: %s", "Yes" if self.token == "cookie_based_auth" else "No")

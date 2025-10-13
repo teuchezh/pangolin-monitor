@@ -20,6 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     base_url = entry.data["base_url"]
     email = entry.data["email"]
     password = entry.data["password"]
+    org = entry.data["org"]
     update_interval = entry.data.get("update_interval", 5)  # По умолчанию 5 минут
     
     _LOGGER.info("Base URL: %s", base_url)
@@ -27,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.info("Update interval: %s minutes", update_interval)
 
     try:
-        api = PangolinApiClient(email, password, base_url)
+        api = PangolinApiClient(email, password, base_url, org)
         _LOGGER.info("Created API client, attempting authentication")
         await api.authenticate()
         _LOGGER.info("Authentication successful")
