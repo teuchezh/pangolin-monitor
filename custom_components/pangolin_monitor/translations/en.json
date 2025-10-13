@@ -18,8 +18,8 @@
         "data": {
           "base_url": "Base URL",
           "email": "Email",
-          "password": "Password",
           "org": "Organization",
+          "password": "Password"
         }
       }
     },
